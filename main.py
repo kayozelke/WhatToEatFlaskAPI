@@ -141,7 +141,7 @@ def get_eaten_dishes():
     min_time = request.args.get("min_time", type=int)
     max_time = request.args.get("max_time", type=int)
 
-    print(f"login: {login}, min_time: {min_time}, max_time: {max_time}")
+    # print(f"login: {login}, min_time: {min_time}, max_time: {max_time}")
     # Sprawdzanie, czy wszystkie dane są dostarczone
     if not all([login, min_time, max_time]):
         return jsonify({"error": "Wszystkie parametry są wymagane"}), 400
