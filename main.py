@@ -194,6 +194,5 @@ def get_eaten_dishes():
     finally:
         connection.close()
 
-
 if __name__ == "__main__":
     app.run(debug=False)
