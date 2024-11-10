@@ -159,10 +159,16 @@ def get_eaten_dishes():
             user_id = user["user_id"]
 
             # Zapytanie do bazy, aby pobrać informacje o spożytych posiłkach w podanym przedziale czasowym
+                # SELECT ud.eat_time, ud.quantity, d.name
+                # FROM user_past_dishes ud
+                # JOIN dishes d ON ud.dishes_dish_id = d.dish_id
+                # WHERE ud.users_user_id = %s AND ud.eat_time BETWEEN %s AND %s
+                # ORDER BY ud.eat_time
             cursor.execute("""
-                SELECT ud.eat_time, ud.quantity, d.name
+                SELECT ud.eat_time, ud.quantity, d.name, t.rating
                 FROM user_past_dishes ud
                 JOIN dishes d ON ud.dishes_dish_id = d.dish_id
+                LEFT JOIN user_tastes t ON t.dishes_dish_id = d.dish_id
                 WHERE ud.users_user_id = %s AND ud.eat_time BETWEEN %s AND %s
                 ORDER BY ud.eat_time
             """, (user_id, min_time, max_time))
@@ -174,7 +180,14 @@ def get_eaten_dishes():
                 return jsonify({"message": "Brak danych o posiłkach w podanym okresie"}), 404
 
             # Przekształcanie danych do odpowiedniego formatu
-            dishes_info = [{"eat_time": dish["eat_time"], "quantity": dish["quantity"], "dish_name": dish["name"]} for dish in eaten_dishes]
+            dishes_info = [
+                {
+                    "eat_time": dish["eat_time"], 
+                    "quantity": dish["quantity"], 
+                    "dish_name": dish["name"],
+                    "rating" : dish["rating"],
+                } for dish in eaten_dishes
+            ]
         
         return jsonify({"user": login, "eaten_dishes": dishes_info}), 200
 
