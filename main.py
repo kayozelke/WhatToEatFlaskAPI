@@ -1,5 +1,7 @@
+import time
 from flask import Flask, request, jsonify
 import pymysql
+import api_functions as af
 
 app = Flask(__name__)
 
@@ -138,61 +140,18 @@ def add_user_taste():
 def get_eaten_dishes():
     # Pobieramy login, min_time i max_time z parametrów zapytania
     login = request.args.get("login")
-    min_time = request.args.get("min_time", type=int)
-    max_time = request.args.get("max_time", type=int)
-
+    min_time = request.args.get("min_time", default=0, type=int)
+    max_time = request.args.get("max_time", default=int(time.time()+24*3600), type=int)
+    
     # print(f"login: {login}, min_time: {min_time}, max_time: {max_time}")
+    
     # Sprawdzanie, czy wszystkie dane są dostarczone
-    if not all([login, min_time, max_time]):
+    if not login or min_time is None or max_time is None:
         return jsonify({"error": "Wszystkie parametry są wymagane"}), 400
 
-    # Połączenie z bazą danych
-    connection = get_db_connection()
-    try:
-        with connection.cursor() as cursor:
-            # Pobranie user_id na podstawie loginu
-            cursor.execute("SELECT user_id FROM users WHERE login = %s", (login,))
-            user = cursor.fetchone()
-            if not user:
-                return jsonify({"error": "Użytkownik nie istnieje"}), 404
-
-            user_id = user["user_id"]
-
-            # Zapytanie do bazy, aby pobrać informacje o spożytych posiłkach w podanym przedziale czasowym
-                # SELECT ud.eat_time, ud.quantity, d.name
-                # FROM user_past_dishes ud
-                # JOIN dishes d ON ud.dishes_dish_id = d.dish_id
-                # WHERE ud.users_user_id = %s AND ud.eat_time BETWEEN %s AND %s
-                # ORDER BY ud.eat_time
-            cursor.execute("""
-                SELECT ud.eat_time, ud.quantity, d.name, t.rating
-                FROM user_past_dishes ud
-                JOIN dishes d ON ud.dishes_dish_id = d.dish_id
-                LEFT JOIN user_tastes t ON t.dishes_dish_id = d.dish_id
-                WHERE ud.users_user_id = %s AND ud.eat_time BETWEEN %s AND %s
-                ORDER BY ud.eat_time
-            """, (user_id, min_time, max_time))
-
-            eaten_dishes = cursor.fetchall()
-
-            # Jeśli użytkownik nie ma danych w tym przedziale czasowym
-            if not eaten_dishes:
-                return jsonify({"message": "Brak danych o posiłkach w podanym okresie"}), 404
-
-            # Przekształcanie danych do odpowiedniego formatu
-            dishes_info = [
-                {
-                    "eat_time": dish["eat_time"], 
-                    "quantity": dish["quantity"], 
-                    "dish_name": dish["name"],
-                    "rating" : dish["rating"],
-                } for dish in eaten_dishes
-            ]
-        
-        return jsonify({"user": login, "eaten_dishes": dishes_info}), 200
-
-    finally:
-        connection.close()
+    result, code = af.internal_get_eaten_dishes(login, min_time, max_time)
+    
+    return jsonify(result), code
 
 if __name__ == "__main__":
     app.run(debug=False)
