@@ -26,9 +26,11 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    min_time = int(time.time()) - 24*3600*5
-    # return af.internal_get_recommended_dishes("marekX22",1,int(time.time()), 6)
-    return af.internal_get_recommended_dishes("annaBee17",1,int(time.time()), 6)
+    # return af.get_user_dishes_ratings(1)
+    return af.internal_get_user_dishes_scores(1)
+    # min_time = int(time.time()) - 24*3600*5
+    # return af.internal_get_recommended_dishes("annaBee17",1,int(time.time()), 6)
+    # return af.internal_get_eaten_dishes("annaBee17",1,int(time.time()))
     # return '<h1>Hello!</h1>'
 
 # Endpoint do dodawania informacji o tym, co użytkownik zjadł
