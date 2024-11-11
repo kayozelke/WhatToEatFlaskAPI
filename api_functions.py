@@ -1,6 +1,5 @@
 import pymysql
 
-
 # MySQL database connection configuration
 db_config = {
     "host": "127.0.0.1",
@@ -8,6 +7,10 @@ db_config = {
     "password": "flask_user",
     "database": "flask_api_dev"
 }
+
+MAX_SCORE_AGE_HOURS = 24 * 28
+SCORE_PER_HOUR = 1
+
 #Helper function to establish a database connection
 def get_db_connection():
     """
@@ -76,3 +79,5 @@ def internal_get_eaten_dishes(login, min_time, max_time):
         return {"user": login, "eaten_dishes": dishes_info}, 200
     finally:
         connection.close()
+
+
