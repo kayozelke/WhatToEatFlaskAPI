@@ -158,5 +158,19 @@ def get_eaten_dishes():
     
     return jsonify(result), code
 
+@app.route("/get-user-dishes-scores", methods=["POST"])
+def get_user_dishes_scores():
+    data = request.get_json()
+    login = data.get("login")
+    
+    if not login:
+        return jsonify({"error": "Wszystkie parametry są wymagane"}), 400
+    
+    user_id = af.internal_get_user_id(login)
+
+    result, code = af.internal_get_user_dishes_scores(user_id)
+    
+    return jsonify(result), code
+
 if __name__ == "__main__":
     app.run(debug=False)

@@ -27,6 +27,27 @@ def get_db_connection():
         cursorclass=pymysql.cursors.DictCursor
     )
 
+def internal_get_user_id(login):
+    """
+    Retrieves the user ID associated with a given login.
+    Args:
+        login (str): The user's login.
+    Returns:
+        int: The user ID, or None if the user is not found.
+    """
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT user_id FROM users WHERE login = %s", (login,))
+            user = cursor.fetchone()
+            if user:
+                return user["user_id"]
+            else:
+                return None
+    finally:
+        connection.close()
+
+
 #Function to retrieve eaten dishes within a specified time range for a given user.
 def internal_get_eaten_dishes(login, min_time, max_time):
     """
@@ -121,7 +142,7 @@ def internal_get_user_dishes_scores(user_id, min_time = int(time.time()) - MAX_A
     user_dishes_scores = internal_get_user_dishes_ratings(user_id, MIN_USER_RATING)
     
     if not user_dishes_scores:
-        return {"message": "Brak informacji o upodobaniach użytkownika"}
+        return {"message": "Brak informacji o upodobaniach użytkownika"}, 404
     
     else: print(user_dishes_scores)
     
@@ -158,9 +179,7 @@ def internal_get_user_dishes_scores(user_id, min_time = int(time.time()) - MAX_A
                     "rating" : value,
                     "score" : total_score
                 }
-            return user_dishes_scores
+            return user_dishes_scores, 200
             
     finally:
         connection.close()
-
-    return 
