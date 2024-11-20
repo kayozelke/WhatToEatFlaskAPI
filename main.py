@@ -159,13 +159,15 @@ def get_eaten_dishes():
 def get_user_dishes_scores():
     data = request.get_json()
     login = data.get("login")
-    
+    # print(login)
     if not login:
         return jsonify({"error": "Wszystkie parametry są wymagane"}), 400
     
     user_id = af.internal_get_user_id(login)
 
+    # result, code = af.internal_get_user_dishes_scores(user_id)
     result, code = af.internal_get_user_dishes_scores(user_id)
+    # result, code = af.internal_get_user_dishes_scores(user_id, int(time.time()) - 24*27*3600, int(time.time()+24*3600))
     
     return jsonify(result), code
 
