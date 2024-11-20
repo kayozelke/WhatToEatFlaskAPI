@@ -166,7 +166,7 @@ def get_user_dishes_scores():
     user_id = af.internal_get_user_id(login)
 
     # result, code = af.internal_get_user_dishes_scores(user_id)
-    result, code = af.internal_get_user_dishes_scores(user_id)
+    result, code = af.internal_get_user_dishes_scores_debug1(user_id)
     # result, code = af.internal_get_user_dishes_scores(user_id, int(time.time()) - 24*27*3600, int(time.time()+24*3600))
     
     return jsonify(result), code

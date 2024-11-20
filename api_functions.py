@@ -183,3 +183,51 @@ def internal_get_user_dishes_scores(user_id, min_time = int(time.time()) - MAX_A
             
     finally:
         connection.close()
+
+def internal_get_user_dishes_scores_debug1(user_id, min_time = int(time.time()) - MAX_AGE_HOURS*3600, max_time = int(time.time())):
+    
+    user_dishes_scores = internal_get_user_dishes_ratings(user_id, MIN_USER_RATING)
+    
+    if not user_dishes_scores:
+        return {"message": "Brak informacji o upodobaniach użytkownika"}, 404
+    
+    else: print(user_dishes_scores)
+    
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            
+            
+            
+            sql_query = f"""
+                SELECT ud.dishes_dish_id, d.name, ud.eat_time, ud.quantity
+                FROM user_tastes t 
+                JOIN user_past_dishes ud ON ud.dishes_dish_id = t.dishes_dish_id  
+                JOIN dishes d ON ud.dishes_dish_id = d.dish_id
+                WHERE t.users_user_id = {user_id} AND t.rating >= {MIN_USER_RATING} AND ud.eat_time BETWEEN {min_time} AND {max_time};
+            """
+            print(sql_query)
+            cursor.execute(sql_query)
+            
+            
+            
+            user_past_dishes = cursor.fetchall()
+            
+            for key,value in user_dishes_scores.items():
+                # score calculations
+                total_score = 0
+                for dish_data in user_past_dishes:
+                    if dish_data.get("dishes_dish_id") != key: continue
+                    score = SCORE_PER_HOUR * round((dish_data['eat_time'] - min_time)/3600) * dish_data["quantity"]
+                    
+                    print(f"Added score for id {dish_data['dishes_dish_id']}: {score}, Eat Time (unix): {dish_data['eat_time']}, as dt: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(dish_data['eat_time']))}, Min Time (unix): {min_time}, as dt: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(min_time))}, Quantity: {dish_data['quantity']}, Dish name: {dish_data['name']}, ")
+
+                    total_score += score
+                user_dishes_scores[key] = {
+                    "rating" : value,
+                    "score" : total_score
+                }
+            return user_dishes_scores, 200
+            
+    finally:
+        connection.close()
